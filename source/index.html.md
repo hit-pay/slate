@@ -1,15 +1,12 @@
 ---
-title: API Reference
+title: Hitpay Payment Request API
 
 language_tabs: # must be one of https://git.io/vQNgJ
   - shell
-  - ruby
-  - python
-  - javascript
+  - php
 
 toc_footers:
-  - <a href='#'>Sign Up for a Developer Key</a>
-  - <a href='https://github.com/slatedocs/slate'>Documentation Powered by Slate</a>
+  - <a href='https://dashboard.staging.hit-pay.com/'>Sign Up for a Developer Key</a>
 
 includes:
   - errors
@@ -19,223 +16,260 @@ search: true
 code_clipboard: true
 ---
 
-# Introduction
+# Overview and Setup
+HitPay provides a seamless payment experience for your customers 
+and an easy integration process for the developers. 
+Hitpay payment works by creating Payment Request and then the customers accepting the Payment Request. 
 
-Welcome to the Kittn API! You can use our API to access Kittn API endpoints, which can get information on various cats, kittens, and breeds in our database.
+1. Create payment request URLs, each request has a unique Request Id.
+2. Your customer using the URL makes the payment with their choice of payment method.
+3. You receive the payment confirmation with a unique Payment ID.
 
-We have language bindings in Shell, Ruby, Python, and JavaScript! You can view code examples in the dark area to the right, and you can switch the programming language of the examples with the tabs in the top right.
+## Setup 
+1. Create a Hitpay account [here](https://dashboard.staging.hit-pay.com)
+2. Setup PayNow (Singapore Only)  in the HitPay Dashboard under Settings > Payment Methods > PayNow
+3. Connect Stripe account (to accepts card payments) under Settings > Payment Methods > Credit Cards
+4. Generate API keys under Settings > Payment Gateway > API Keys.  These keys will give you access to create payment requests.
 
-This example API documentation page was created with [Slate](https://github.com/slatedocs/slate). Feel free to edit it and use it as a base for your own API's documentation.
+# Integration Steps
+
+1. Create a payment request 
+2. Redirect the customer to the payment link 
+3. Handle payment confirmation/failure using webhooks & redirects
+4. Get payment request status 
+
 
 # Authentication
 
 > To authorize, use this code:
 
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-```
-
 ```shell
 # With shell, you can just pass the correct header with each request
 curl "api_endpoint_here"
-  -H "Authorization: meowmeowmeow"
+  -H "X-BUSINESS-API-KEY: meowmeowmeow"
 ```
 
-```javascript
-const kittn = require('kittn');
+```php
 
-let api = kittn.authorize('meowmeowmeow');
+
 ```
 
 > Make sure to replace `meowmeowmeow` with your API key.
 
-Kittn uses API keys to allow access to the API. You can register a new Kittn API key at our [developer portal](http://example.com/developers).
+Hitpay uses API keys to allow access to the API. You can register a new API key at our [developer portal](https://dashboard.staging.hit-pay.com/).
 
-Kittn expects for the API key to be included in all API requests to the server in a header that looks like the following:
+Hitpay expects for the API key to be included in all API requests to the server in a header that looks like the following:
 
-`Authorization: meowmeowmeow`
+`X-BUSINESS-API-KEY: meowmeowmeow`
 
 <aside class="notice">
 You must replace <code>meowmeowmeow</code> with your personal API key.
 </aside>
 
-# Kittens
+# Payment Requests
 
-## Get All Kittens
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get()
-```
+## Create Payment Request
 
 ```shell
-curl "http://example.com/api/kittens"
-  -H "Authorization: meowmeowmeow"
+curl POST "https://api.staging.hit-pay.com/v1/payment-requests"
+  -H "X-BUSINESS-API-KEY: meowmeowmeow"
+  -H "Content-Type: application/x-www-form-urlencoded"
+  -data-urlencode "email=tom@example.com"
+  -data-urlencode "redirect_url=https://example.com/success"
+  -data-urlencode "webhook=https://example.com/webhook"
+  -data-urlencode "amount=599"
+  -data-urlencode "currency=SGD"
+
 ```
 
-```javascript
-const kittn = require('kittn');
+```php
 
-let api = kittn.authorize('meowmeowmeow');
-let kittens = api.kittens.get();
-```
-
-> The above command returns JSON structured like this:
-
-```json
-[
-  {
-    "id": 1,
-    "name": "Fluffums",
-    "breed": "calico",
-    "fluffiness": 6,
-    "cuteness": 7
-  },
-  {
-    "id": 2,
-    "name": "Max",
-    "breed": "unknown",
-    "fluffiness": 5,
-    "cuteness": 10
-  }
-]
-```
-
-This endpoint retrieves all kittens.
-
-### HTTP Request
-
-`GET http://example.com/api/kittens`
-
-### Query Parameters
-
-Parameter | Default | Description
---------- | ------- | -----------
-include_cats | false | If set to true, the result will also include cats.
-available | true | If set to false, the result will include kittens that have already been adopted.
-
-<aside class="success">
-Remember — a happy kitten is an authenticated kitten!
-</aside>
-
-## Get a Specific Kitten
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get(2)
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get(2)
-```
-
-```shell
-curl "http://example.com/api/kittens/2"
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.get(2);
 ```
 
 > The above command returns JSON structured like this:
 
 ```json
 {
-  "id": 2,
-  "name": "Max",
-  "breed": "unknown",
-  "fluffiness": 5,
-  "cuteness": 10
+    "id": "90f28b43-2cff-4f86-a29e-15697424b3e7",
+    "name": null,
+    "email": "tom@example.com",
+    "phone": null,
+    "amount": "599.00",
+    "currency": "SGD",
+    "status": "pending",
+    "purpose": null,
+    "reference_number": null,
+    "payment_methods": [
+        "paynow_online",
+        "card",
+        "wechat",
+        "alipay"
+    ],
+    "url": "https://securecheckout.staging.hit-pay.com/payment-request/@amazone-prime-pte-ltd/90f28b43-2cff-4f86-a29e-15697424b3e7/checkout",
+    "redirect_url": "https://example.com/success",
+    "webhook": "https://example.com/webhook",
+    "send_sms": true,
+    "send_email": true,
+    "sms_status": "pending",
+    "email_status": "pending",
+    "allow_repeated_payments": true,
+    "expiry_date": null,
+    "created_at": "2020-07-03T02:18:49Z",
+    "updated_at": "2020-07-03T02:18:49Z"
 }
 ```
 
-This endpoint retrieves a specific kitten.
-
-<aside class="warning">Inside HTML code blocks like this one, you can't use Markdown, so use <code>&lt;code&gt;</code> blocks to denote code.</aside>
+This endpoint creates a new payment request.
 
 ### HTTP Request
 
-`GET http://example.com/kittens/<ID>`
+`POST https://api.staging.hit-pay.com/v1/payment-requests`
 
-### URL Parameters
+### Query Parameters
+
+<aside class="notice">
+Mandatory fields are <code>amount</code> and <code>currency</code>. Remember to include header <code> Content-Type: application/x-www-form-urlencoded </code> 
+</aside>
+
+Parameter | Description | Example
+--------- | ------- | -----------
+amount |  Amount related to the payment | 2500.00
+payment_methods[] | Choice of payment methods you want to offer the customer | paynow_online , card, wechat, alipay
+currency |  Currency related to the payment  | SGD
+email | Buyer’s email | foo@example.com
+purpose | Purpose of the Payment request  FIFA 16
+name |  Buyer’s name |  John Doe
+phone | Buyer’s phone number | 9999999999
+reference_number | Arbitrary reference number that you can map to your internal reference number. This value cannot be edited by the customer | XXXX123
+redirect_url | URL where we redirect the user after a payment. Query arguments payment_request_id and  status are sent along | https://example.com/callback
+webhook | URL where our server do POST request after a payment If done | https://example.com/webhook
+allow_repeated_payments | If set is true, multiple payments can be paid on a payment request link. Default value is false | false
+expiry_date | Time after which the payment link will be expired.Applicable for repeated payments. Default is Null | 2021-02-02 01:01:01
+
+
+
+### Response
+
+All the request data included
 
 Parameter | Description
---------- | -----------
-ID | The ID of the kitten to retrieve
+--------- | -------
+id | Payment request id 
 
-## Delete a Specific Kitten
 
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.delete(2)
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.delete(2)
-```
+## Delete Payment request
 
 ```shell
-curl "http://example.com/api/kittens/2"
-  -X DELETE
-  -H "Authorization: meowmeowmeow"
+curl DELETE "https://api.staging.hit-pay.com/v1/payment-requests/{request_id}"
+  -H "X-BUSINESS-API-KEY: meowmeowmeow"
+  -H "Content-Type: application/x-www-form-urlencoded"
 ```
 
-```javascript
-const kittn = require('kittn');
+```php
 
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.delete(2);
 ```
 
 > The above command returns JSON structured like this:
 
 ```json
 {
-  "id": 2,
+  "id": "90f28b43-2cff-4f86-a29e-15697424b3e7",
   "deleted" : ":("
 }
 ```
 
-This endpoint deletes a specific kitten.
+This endpoint deletes a specific payment request.
 
 ### HTTP Request
 
-`DELETE http://example.com/kittens/<ID>`
+`DELETE https://api.staging.hit-pay.com/v1/payment-requests/<ID>`
 
 ### URL Parameters
 
 Parameter | Description
 --------- | -----------
-ID | The ID of the kitten to delete
+ID | Payment request ID
 
+## Get Payment Status
+
+```shell
+curl GET "https://api.staging.hit-pay.com/v1/payment-requests/{request_id}"
+  -H "X-BUSINESS-API-KEY: meowmeowmeow"
+  -H "Content-Type: application/x-www-form-urlencoded"
+```
+
+```php
+
+```
+
+> The above command returns JSON structured like this:
+
+```json
+{
+    "id": "90f34585-537f-4cce-8607-629f53c23827",
+    "name": null,
+    "email": "tom@example.com",
+    "phone": null,
+    "amount": "599.00",
+    "currency": "SGD",
+    "status": "completed",
+    "purpose": null,
+    "reference_number": null,
+    "payment_methods": [
+        "paynow_online",
+        "card",
+        "wechat",
+        "alipay"
+    ],
+    "url": "https://securecheckout.staging.hit-pay.com/payment-request/@amazone-prime-pte-ltd/90f34585-537f-4cce-8607-629f53c23827/checkout",
+    "redirect_url": "https://example.com/callback",
+    "webhook": "https://example.com/webhook",
+    "send_sms": true,
+    "send_email": true,
+    "sms_status": "pending",
+    "email_status": "pending",
+    "allow_repeated_payments": false,
+    "expiry_date": null,
+    "created_at": "2020-07-03T10:59:38Z",
+    "updated_at": "2020-07-03T11:00:07Z",
+    "payments": [
+        {
+            "id": "90f3459d-1f07-4127-8d68-691b0b239207",
+            "quantity": 1,
+            "status": "succeeded",
+            "buyer_name": null,
+            "buyer_phone": null,
+            "buyer_email": "tom@example.com",
+            "currency": "sgd",
+            "amount": "599.00",
+            "payment_type": "card",
+            "fees": "5.36",
+            "created_at": "2020-07-03T10:59:53Z",
+            "updated_at": "2020-07-03T11:00:10Z"
+        }
+    ]
+}
+```
+
+This endpoint gets the status of a specific payment request.
+
+### HTTP Request
+
+`GET https://api.staging.hit-pay.com/v1/payment-requests/<ID>`
+
+### Request Parameters
+
+Parameter | Description
+--------- | -----------
+ID | Payment request ID
+
+
+### Response Parameters
+
+Includes all the data from `Create Payment Request`
+
+Parameter | Description
+--------- | -----------
+ID | Payment request ID
+status | completed/expired/pending/failed. pending if pending payment or the if the id is repeating payment
+payments | array of payments made to this request ID. Will contain more than one if its a repeating payment link
