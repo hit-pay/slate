@@ -8,6 +8,7 @@ language_tabs: # must be one of https://git.io/vQNgJ
 toc_footers:
   - <a href='https://dashboard.sandbox.hit-pay.com/'>Sign Up for a Developer Key</a>
   - <a href='https://dashboard.hit-pay.com/'>Sign Up for a Production Key</a>
+  - <a href='https://chat.whatsapp.com/D40dZAQ9Hu02JDBI2ySnck'>Join the developer WhatsApp group </a>
 
 includes:
   - errors
@@ -17,10 +18,17 @@ search: true
 code_clipboard: true
 ---
 
-# Overview and Setup
-HitPay provides a seamless payment experience for your customers 
-and an easy integration process for the developers. 
-Hitpay payment works by creating Payment Request and then the customers accepting the Payment Request. 
+# PayNow APIs and Payment Request APIs
+HitPay provides a seamless payment experience for your customers and an easy integration process for the developers.
+<br />
+<br />
+With Hitpay's API integration you can start accepting multiple payment methods including **PayNow (Singapore), Visa, Master, GrabPay, Apple Pay, Google Pay, American Express, AliPay, and WeChat Pay** on a single checkout page hosted on hitpay. 
+<br />
+<br />
+HitPay's PayNow integrations allow you to fully automate PayNow acceptance in Singapore with instant feedback and webhook.
+
+![PayNow API](/images/mock.png)
+
 
 1. Create payment request URLs, each request has a unique Request Id.
 2. Your customer using the URL makes the payment with their choice of payment method.
@@ -157,7 +165,7 @@ echo $response->getBody();
 }
 ```
 
-This endpoint creates a new payment request.
+This endpoint creates a new payment request. This is the first step of the payment flow, once you have all the details from the user and ready to collect payment use this API to create a payment request.
 
 ### HTTP Request
 
@@ -351,7 +359,12 @@ payments | array of payments made to this request ID. Will contain more than one
 ```url
 payment_id=92965a2d-ece3-4ace-1245-494050c9a3c1&payment_request_id=92965a20-dae5-4d89-a452-5fdfa382dbe1&phone=&amount=599.00&currency=SGD&status=completed&hmac=330c34a6a8fb9ddb75833620dedb94bf4d4c2e51399d346cbc2b08c381a1399c
 ``` 
-Webhook is your URL to which Hitpay will send the payment details as a POST request.  This request is <code>application/x-www-form-urlencoded</code>.
+Webhook is a POST request send from HitPay's server to your server about the payment confirmation. If you are using hitpay APIs to integrate into your e-commerce checkout you must mark your order as paid ONLY after the webhook is received and validated.
+
+1. Create an endpoint (E.g. /payment-confirmation/webhook) in your server that accepts POST requests. This request is <code>application/x-www-form-urlencoded</code>.
+2. Validate the webhook data using your salt value 
+3. Return HTTP status code 200 to Hitpay 
+4. Mark your order as paid
 
 ### Webhook fields
 Following fields are sent with the webhook request:
@@ -367,7 +380,7 @@ status |	Payment status (completed / failed)
 reference_number | Arbitrary reference number that you have mapped during payment request creation
 hmac |	Message Authentication code of this webhook request
 
-### Webhook Message Authentication code
+### Validate Webhook
 
 Hitpay creates a list of all values from the key-value pairs that we send in the POST request and sort them in the order of their keys alphabetically. We then concatenate all these values together. We then use the HMAC-SHA1 algorithm to generate the signature. The HMAC key for the signature generation is the secret `salt` from your dashboard under `Settings > Payment Gateway > API Keys`.
 
