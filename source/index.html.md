@@ -34,6 +34,11 @@ HitPay's PayNow integrations allow you to fully automate PayNow acceptance in Si
 2. Your customer using the URL makes the payment with their choice of payment method.
 3. You receive the payment confirmation with a unique Payment ID.
 
+Hitpay also provides plugins for all popular e-commerce platforms without any need for API integrations:
+<br/>
+[Shopify](https://hitpay.zendesk.com/hc/en-us/articles/900000685746-Add-PayNow-to-your-Shopify-E-Commerce-Store), [WooCommerce](https://hitpay.zendesk.com/hc/en-us/articles/900000771503-Add-HitPay-to-your-WooCommerce-Store), [Wix](https://hitpay.zendesk.com/hc/en-us/articles/900001943683-HitPay-Wix-Payment-Gateway-Singapore-Wix-PayNow-QR-Payment-Gateway-How-to-add-HitPay-to-my-Wix-Site), [Magento](https://hitpay.zendesk.com/hc/en-us/articles/900002303026-Add-HitPay-to-Magento-Online-Stores), [Prestashop](https://hitpay.zendesk.com/hc/en-us/articles/900001912306-Add-HitPay-to-Prestashop-Online-Stores), [EasyStore](https://hitpay.zendesk.com/hc/en-us/articles/900004982143-HitPay-EasyStore-Payment-Gateway-Singapore-Add-HitPay-to-EasyStore-PayNow-QR-EasyStore-Singapore), [OpenCart](https://hitpay.zendesk.com/hc/en-us/articles/900003748706-HitPay-OpenCart-Payment-Gateway-Singapore-Add-HitPay-to-OpenCart), [Ecwid](https://hitpay.zendesk.com/hc/en-us/articles/900006056083-HitPay-Ecwid-Payment-Gateway-Singapore-Add-HitPay-to-Ecwid-Online-Stores) and [Xero](https://hitpay.zendesk.com/hc/en-us/articles/900003418126-Setting-up-the-Xero-Integration-with-HitPay) 
+
+
 ## Setup 
 1. Create a Hitpay account [https://dashboard.sandbox.hit-pay.com](https://dashboard.sandbox.hit-pay.com)
 2. Setup PayNow (Singapore Only)  in the HitPay Dashboard under Settings > Payment Methods > PayNow
@@ -160,8 +165,8 @@ echo $response->getBody();
     "email_status": "pending",
     "allow_repeated_payments": true,
     "expiry_date": null,
-    "created_at": "2020-07-03T02:18:49Z",
-    "updated_at": "2020-07-03T02:18:49Z"
+    "created_at": "2020-07-03T02:18:49",
+    "updated_at": "2020-07-03T02:18:49"
 }
 ```
 
@@ -180,7 +185,7 @@ Mandatory fields are <code>amount</code> and <code>currency</code>. Remember to 
 Parameter | Description | Example
 --------- | ------- | -----------
 amount |  Amount related to the payment | 2500.00
-payment_methods[] | Choice of payment methods you want to offer the customer | paynow_online , card, wechat, alipay
+payment_methods[] | Choice of payment methods you want to offer the customer | paynow_online , card, wechat, alipay, grabpay
 currency |  Currency related to the payment  | SGD
 email | Buyer’s email | foo@example.com
 purpose | Purpose of the Payment request  FIFA 16
@@ -189,7 +194,7 @@ reference_number | Arbitrary reference number that you can map to your internal 
 redirect_url | URL where we redirect the user after a payment. Query arguments `reference` (payment request id) and  `status` are sent along | https://example.com/callback
 webhook | URL where our server do POST request after a payment If done | https://example.com/webhook
 allow_repeated_payments | If set is true, multiple payments can be paid on a payment request link. Default value is false | false
-expiry_date | Time after which the payment link will be expired.Applicable for repeated payments. Default is Null | 2021-02-02 01:01:01
+expiry_date | Time after which the payment link will be expired(time in SGT). Applicable for repeated payments. Default is Null | 2021-02-02 01:01:01
 
 
 
@@ -287,8 +292,8 @@ echo $response->getBody();
     "email_status": "pending",
     "allow_repeated_payments": false,
     "expiry_date": null,
-    "created_at": "2020-07-03T10:59:38Z",
-    "updated_at": "2020-07-03T11:00:07Z",
+    "created_at": "2020-07-03T10:59:38",
+    "updated_at": "2020-07-03T11:00:07",
     "payments": [
         {
             "id": "90f3459d-1f07-4127-8d68-691b0b239207",
@@ -301,8 +306,8 @@ echo $response->getBody();
             "amount": "599.00",
             "payment_type": "card",
             "fees": "5.36",
-            "created_at": "2020-07-03T10:59:53Z",
-            "updated_at": "2020-07-03T11:00:10Z"
+            "created_at": "2020-07-03T10:59:53",
+            "updated_at": "2020-07-03T11:00:10"
         }
     ]
 }
@@ -382,7 +387,7 @@ hmac |	Message Authentication code of this webhook request
 
 ### Validate Webhook
 
-Hitpay creates a list of all values from the key-value pairs that we send in the POST request and sort them in the order of their keys alphabetically. We then concatenate all these values together. We then use the HMAC-SHA1 algorithm to generate the signature. The HMAC key for the signature generation is the secret `salt` from your dashboard under `Settings > Payment Gateway > API Keys`.
+Hitpay creates a list of all values from the key-value pairs that we send in the POST request and sort them in the order of their keys alphabetically. We then concatenate all these values together. We then use the HMAC-SHA256 algorithm to generate the signature. The HMAC key for the signature generation is the secret `salt` from your dashboard under `Settings > Payment Gateway > API Keys`.
 
 Hitpay PHP API Wrapper:
 [https://github.com/hit-pay/php-sdk](https://github.com/hit-pay/php-sdk)
